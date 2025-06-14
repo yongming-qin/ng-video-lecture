@@ -163,7 +163,7 @@ class GPTLanguageModel(nn.Module):
         # idx and targets are both (B,T) tensor of integers
         tok_emb = self.token_embedding_table(idx) # (B,T,C)
         pos_emb = self.position_embedding_table(torch.arange(T, device=device)) # (T,C)
-        x = tok_emb + pos_emb # (B,T,C)
+        x = tok_emb + pos_emb # (B,T,C) C: embedding dimension
         x = self.blocks(x) # (B,T,C)
         x = self.ln_f(x) # (B,T,C)
         logits = self.lm_head(x) # (B,T,vocab_size)
@@ -171,8 +171,8 @@ class GPTLanguageModel(nn.Module):
         if targets is None:
             loss = None
         else:
-            B, T, C = logits.shape
-            logits = logits.view(B*T, C)
+            B, T, V = logits.shape # B: batch size, T: sequence length, V: vocabulary size
+            logits = logits.view(B*T, V)
             targets = targets.view(B*T)
             loss = F.cross_entropy(logits, targets)
 
